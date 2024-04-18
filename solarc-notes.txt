@@ -1,0 +1,568 @@
+============= S3 =============
+objects can be 0 tb
+11 9 durability
+>3 az
+ms first byte
+buckets private by default , logs in seperate ucket
+acl is legacy and more simple (not depricated), policy is json
+sse (server side encryption) encryption at rest
+put is read after write consistancy, owverwite is eventual consistancy bedcause replicate
+cross region replicate needs versionning
+s3 versiong can only be suspended after created
+transfer acceleration uses edge location upload, then aws backbone network
+presigned urls gives temporary access to priavte (write and read), common use case in webapps to allow users to download private files
+mfa delete requires mfa code to delete objects from bucket, need versioning on, only root user can delete
+S3 is a gobal region infterface
+version don't inherit previous access if make file public
+lifecycle each have minimums, 30 day for default, lifecycle management- objects move between storage classes or deleted based on schedule automatically
+Upload recives http 200
+bucket names unique like domain name
+secuirty in transit upload files done over ssl
+client side encryption - encrypt fules before uplaoding them to s3
+standard fast, 3az
+intelegen tiering uses ml to determine class
+standard infruqent isonce a month, also retrevial fees 50% less
+1az 20%
+glacier takes minutes or hours
+glacer deep archive takes 12 horus
+
+============= snowball =============
+snowball is petascale
+move data onto aws via briefcase computer that is storage device
+trusted platform model, data encrypted 256bit, tamper weatherproof, eink display
+transfer must be 90 days, 
+reduce costs by 1/5th, reduces transfer times to less than a week for 100tb
+50tb and 80tb - 8tb usable for old ones
+80tb or 210tb for new ones
+snowball edge can do local processing and edge compute, can cluster
+aws snowmobile 100pb, import into s3 or galicer, exabyte migration
+
+============= vpc =============
+logically isolated section of aws cloud, can launch aws reouces inn a vitrual network you define
+basically own personal gateway
+internet -> igw -> routing table -> nacl -> subnet
+vvpc region specific, 5pcs per region, each region has a default vpc
+200 subnets per vpc
+ipv4 cidr block 
+dns hostnames disabled by default
+default vpc has one subnet in each az
+0.0.0.0/0 is default, reperecents all possible ip addresses
+vpc peering allows connecting two vpc groups over direct network using private ip address
+no transitive pereing, no overlapping cidr blocks
+vpc peering uses star config, z1 cneteral vpc and 4 other vpcs
+can peer to differnt account or regions
+route table is where network trafic is directed, subnet can only have one route table, but a routeable can have multiple subnet
+bastion/jumpbox, ec2 instance that gives access to another in private subnet
+nat gateways are one way
+sessions manager replaces need for basitions
+direct connect estabilises dedicated network connection from on premise locations to aws, very fast, 50-500m or 1gb to 10gb
+reduces network cost, increase bandwith thruput, provides more consistance bandwith experience
+vpc endpoints allows to private connect vpc to other aws servces, two types interface endpoint and gateway
+interface enpoint makes elastic netwrork intrerface wwith private ipp address, powered by aws privatelink, cost money, support many services
+gateway endpoint for a speicifc route in route table destined for aws service (currently only dynamodb and s3) FREE
+vpc flow logs capture ip information inaand out, logs can be created for vpc, subnets, and network interface, stored in cloudwatch logs
+vpc flowlog src addr/dst addr contain ip address (ipv4 and 6)
+vpc flow log config cant be canged after created
+cant enable vpc flow log unless smae account
+vpc flow log doesn't monitor some trafic
+n acl is virtual firewall for subnet, allow or deny traffic inbound and outbound, rule # determines order evaluation. increments of 10 recommended. you can block a single ip address (cant do with sg), stateless
+sg is a virtual firewall for instance, protocal and port level, all traffic is blocked by default, multiple can be on instance, permissive
+10k sg per region, 60 inbound and 60 outbound per sg, 16 sg per eni, sg cannt block speicifc ip. stateful (allowed inbound allso allouwed outbound)
+nat gateway remaps one ip address into another, can have nat instances or nat gateways
+nat instances are ec2 instances, nat gateways are managed services which has redudnat azs
+nat instance must disable source and dest checks, must exist in public subnet, must allow route out, ha can be achieved through atoscaling groups, mutile subnet in diffa z, and automate followver with scirpt
+nat gateways no need to disable, no require patch, auto assigned public ip, redudant in az (meaning if ec2 fails it goes up again), 1 nat per 1 az
+iam manages acces of users and reoucess
+users are signle, groups are users that share permissions, roles are permissions
+a policy can be attached to user (inline policy)
+managed policy (by aws), inline polcy, and customer managed policy
+version policy language, 2012-10-17 is latest,
+statement is the main elemetns, have action to resource for principal (user or resurce), could have condition
+iam can set password policies
+access keys allow programatic access, users can only have 2
+click ops
+
+================= vpc igw =================
+egress-only internet gateway is for ipv6, allows ipv6 to access internet, but not internet to access ipv6
+IPv6 addresses are globally unique and are therefore public by default
+nat gateway cant be used for ipv6
+
+================= cognito =================
+aws cognito is app sigin 
+cognito user pools ,cogneto identitiy pools, cognito sync
+web identity federation exchange identiy between dienteyty provider and app,
+identiy provider is like next provider, github amazon facebook etc
+security assertion markup language (saml) handles sso
+user pools are actions for web app like sign in or account recovery, way of decentralizing user authentication
+identiy pools privde temp aws credienties to resources
+sync does user data and pereeferenes across devices with one line of code
+oidc is a type of identiy provider that uses oauth (idP)
+
+============= cli =============
+cli lets control multiple aws from command line and automate them through scrypts, --profile for aws occount, --output changes json, table, and text
+aws sdk contorls resources from code
+uses programatic access with access key aid and secret acees key (aws credentials)
+
+============= dns =============
+dns translate domain names to ip addresses
+ip identifies computers, ipv4 is 32 bits, 4 billion
+ipv6 is 128 bits, 340 undecillion 1+36 zeros 
+toop level is .com, second word in domain is second level, managed by internetassigned number athority, IANA
+every domain needs SOA record, zone can only have one
+ns record used by type level domain servers to direct to dns, ttl is seconds
+
+============= route53 =============
+route53 is dns service
+has record sets where are dns records, alias can be used to route traffic to aws resouces
+7 types of routing
+simple routing is default, one record with value that has one or may ip
+weighted routed policy splits traffic based on weights, can be used to ab
+latency based routing, routes traffic based on region
+failover routing, primary and secondary and if primary fails, goes to secondary
+geolaocating routing, can route based on geo 
+geoproximity routign policy musted used traffic flow, can route baased on custom regions with bias and coordinates
+multi value answer policy, picks a record by random, does health check, and if it fails picks another
+route53 health checks every 30s by defualt, cna be reduced to 10s,
+health check can initalize a failover, can monitor other healthcheecks to make reaction
+50 health checks for aws endpoints that are in same account, .50 per check per month
+route53 resolver (.2 resolver), lets route dns queries between vpc and network for hybrid environments (on premise and aws)
+traffic flow is visual editor, 50 per policy record / month
+
+============= ec2 =============
+cloud computing service, cna choose os, storage, memory and network thruput, can be done within minutes
+highly configuarable server, compute capacity
+amazone machine image is ami, template for os
+insatnce type is tier
+genreal perpose is for web servers and code repos (balanced)
+compute optimized high peroffmnace processor (modling, game server)
+memor optimized (in memoery cache/db)
+accelerated optimizedd (hardware accelorators/co-processors) for ml, computaiton finacne, speech recognition
+storage optimized for high seq read wrie with local stroage data set, nosql or dbs
+insntace sizes generallly double in price and attributes
+NEVWER EMBED AWS CREDENTIALS
+instance profile holds role to attatch to ec2 instance
+palce groups are logical placements of instance to optimize comm, perf, and durrability, free
+cluster placement oapcks inside az, low latenyc, suitable for high performance
+partition spreads accross logical partitions, each partition don't share hardware, good for casandra
+spread each instance is different rack, max of 7, can be multi az
+can provide ec2 with userdata, script ran when launching ec2
+metadata is info about instance
+ec2 priciing
+on demand, no upfuont and no long term commitment, charged by hour or minute
+on demand is for short term, spikey, or unpredictable. suited for new app
+reserved instance, best long term savings, steady state app perdictiable, or required reserve capacity term x class x payment term x class x payment option
+standard is up to 75% reduce pricig, can't change instance
+convertable 54% reduce, allows chaing if greater or equal
+scheduled reserve for timeperiod, like every single friday
+terms is 1year or 3year, greater means bigger savings
+payjment options, all upfront, partial upfront, no upfront
+reserved instances can be shared between multiple accoutnts in org, ris can be soled in ri marketpalce
+spot instance pricing biggest savings (90%) is unused capacity that is sold, can be terminated at any time, if terminated by aws dont get charged patial hour, if you terminate you do get charged, ver low compute
+ec2 dedicated hosting for when server bound licency, ec2 is multi tennent (virtual iso), but single tennant is hardwire iisolation. on demand, reserved is 70% off. enterprice secirity conserns
+ec2 metroics are cpu util, network util, disck perf, disc read/writes
+custom metric for mem, disc swap, dik space, page file, log collection
+
+============= ami =============
+ami is tempolte to configure instance, can turn ec2s into amsi to create copies of server, region specific
+amis help create icremential changes, system manager automation can routinly patch your ami with security updates
+amis are be used with LaunchConfiguartions 
+ami marketplace lets purchase subs to vendor amis, normally purchasing security hardended amis
+community ami or aws marketpalce, region specific ids
+amis backed by ebs or instance store
+copy ami to copy to another region
+
+============= ec2 autoscaling groups (asg) =============
+collection of ec2 instances treated as group, can scale capacity or health scheck requirements or spolicies
+capacity min max and desired cappacity
+health check scaling, can be ec2 type for status, if failes ec2 instance is kiled, elb health check pings server with /health-check endpoint
+scaling polcies
+target tracking scaling, nmaitains metric as target value, eg average cpu 
+simple scaling policy when alarm breached (legacy)
+scaling policy with steps, escalates based on alarm value
+elastic load balancer (elb) scaling
+classic load balancers associated to asg, application and newtwork loadbalancers are indirect via target gropus
+launch conifigurates help asg to launch ec2, cannot be edited once created, gotta clone 
+launch tempaltes are laucnch configs with versioning
+asg term goes as follows: choose az with most instances, then term oldest launnch config, then term which is closest to billign hour, then choose random
+make sure min asg is still met when fail happens
+
+============= elastic load balancer elb =============
+elb is a load balance, balance via rules
+elb have listernrs, rules, and target groups
+listeners listen for incomming traffic, rules decide what to do with traffic, target is where to send traffic
+classic load banacer listen on port, have registered targets
+application load balncer for http and https, layer 7 of osi, request routing rules add routing rules per http protocol, can have waf, good for web apps
+network load balancer nlp (tcp/udp), layer 4, mullions of reqs per second, for low latency (eg games)
+classic load ballanceer, layer 7 for sticky sessions or layer 4 for tcp apps, corss zone load balancing, responds with 504 if underlying not responding, rather use nlb or alb
+sticky sessions binds user session to ec2 instance, requests go to same instance, typically utilized with clb, useful when info stored on single instqance
+if you need ip addr of user, check x forwarded for header from elb
+elb health checks report as inservice or outofservice, elb does not kill unealthy
+cross zone load balancing only for classic and network, enabled means distribute in all azs, disabled is evenly arcorss in isolated azs
+request routing allows to forward or redirect traffic via query sting, subdoamin, or path
+alb have lisnter and rules, nlbdont have rules, waf only alb, sticky sessions remembered via cookie
+
+============= efs =============
+efs scalabile nfs file system, grows on demand
+multiple ec2 can mount to single efs, uses nfsv4 client, efs create mount targests
+read after write consistancy, stored in multiple azs
+only linux accesible, spans multiple azs, POSIX complient
+
+============= ebs =============
+elastic block store is virtual hard drive in cloud
+iops is input output per second, speed for non contiguious reads and writes, thruput is data rate to and from storage, bandwitth is total possible speed. bandwith is a pipe, thruput is water
+general perpose is balance of price and perfomance,provisioned iops (ssd) for fast input and oput, large dbs
+st1 is magnetic drive for quick tthruput, gfor big data
+sc1 is cold hdd for infrueqnt access, big data
+ebs magnetic is previous gen hdd, for archival storage
+moving to az, take snapshot,  create ami, launch new ec2
+ebs encrypt root volum can be done on creation, encrypting existing volume needs snapshot and copy command to create encrypted snapshot
+ebs volume (most used), durable
+instace storage volumes are temporary (ephemeral, created from template stored in s3)
+cant span multiple azs, not POSIX complient
+
+============= cloudfront =============
+cdn network that creates edge locations, access based on geographic location
+origin is where the files are located, distrobution is collection of edge locations, edge location is server nearby to the user that stores cche content
+price class changes costs, 2 types (web) and rtmp
+can have behaviors, invalidations, error pages, and restrictions (geo restrictions)
+lambda@edge, overide behavior of requests and responses, intercepts before they hit the cloudfront, authentication or a to b
+cloudfront protection, oragin identiy access is user id that gives cf permission to fetch praivte things, for signed urls or cookies need OAI
+signed urls for cloudfront, presigned urls are s3, both do same thing
+signed cookies are set for multiple restirected files
+refreshing cache costs money because of transfer costs to edge locations, ttl defines cache expiration
+origin is resouce
+
+============= rds =============
+relation database service
+encryption at rest uses aws kms
+backups two solutions, automated has retition period, no chage for backups, i/o may be suspended during backup, stored in s3
+mmanual snapshots can be done too 
+backups persist even when rds is delteed
+backup data is not restored overtop existing instance, makes new one
+rds multi az makes copy to another az, syncs data over, slave database. automatic fallover promotes slave to master, called Multi-AZ failover
+read replicas allows multiple copies but they only allow reads, can have up to 5 and can be multi az, for high read applications
+read replicas are scaleably, multi az are durable, dont have auto failover
+enhanced monitoring is for rds
+rds events are only operational events, not data events. Need native function that invokes lambda
+rds enhanced monitoring runs as agent on instance, cloudwatch gets from hyperviso
+
+============= aurora =============
+fully managed psql or mysql designed to scale, combines speed an avail of high ened db with simplicy and cost effectiveness of open source
+mysql is 5x better than traditional mysql, auora is 3x perfmance than trational
+1/10th the cost of other solutions
+scaling with 10gb incremnts to 64tb, comput sclaes up to 32vcpu and 244gb jmemory
+min 3 azs, each has 2 copies of data. 6 copies total. losing 2 copies without affecting write, 3 copies without affecting read
+backups and failovers handled, snapshots can be shared with other occunts, self healing in discs
+2 types of replicas, amazon aurora and mysql read replicas
+aurora server less only runs when needed, on demand, havve min and max acus (auora capacity unites)
+cluster endpoint is writer endpoint, reader endpoint is for read replicas
+reader auto load balances
+
+============= redshift =============
+petabyte size data warehouse, database is online transaction porocessing (oltp), data warehouse is online analytical processing (olap), oltp is fast access to speicic transactions, olap is queries across data, generating reports
+redshift is 1/10th most services, columnar storage database reduces disck io requrements (looking at colunms not rows)
+single node comes in size of 160gb, multi node can launch cluster of nodes, has leader node that manages connections, compute nodee stores data and perfoms quries, max 128 compute nodes
+dense compute for high perofmance, dense storage whe nhave ton of data (dc and ds)
+redshift uses compressio, similar data is stored sequentulaly, does not require index or materilazed views  which saves space, when laoding data on empty table, data is sampled and compresion determined automatically
+redshift uses massively parallel processing (mpp), distrubutes laod across all ones, lets you add new nodes while maintaining fast quueries
+bakcups have 1 day up to 35 day retention, 3 copies are mantained (original, replica, and s3)
+redshift is billed 1 unit per node per hour, not charged for leader node hours, data transfer is charged within vpc, not outside
+uses ssl and aes
+redshift is single az, snapshots can be restored to diff az
+
+============= dynamodb =============
+nosql guarentees consistant read and writes at scale
+k,v store and document store
+scales to whatever capacity is needed
+stored across 3 regions, uses ssd
+tables uses pk and sk, row is called item, attributes are columns
+possible for data to be inconsistant, eventually consistant reads are default (fast, but not gurantee, becomes generally consistant in 1s), strongly consistant reads (slower reads)
+
+============= cloudformation =============
+tempalte language that defines aws resources, auotmation of rewsource creation via code
+templates can be in json or yaml
+cloudformations require at least once resource
+aws quickstarts are prebuilt cloudformation templates
+iac and automate provision resources
+nested stacks breaks up tmeplate into smaller ones
+paramters is how get user input into tmeplates, tnrasforms apply marcros, outputs used in other stacks, mappings maps key values like a lookup table, condtions
+
+============= cloudwatch =============
+cloudwatch logs, metrics, events, alarms, dashboard, is monitoring solution for resources
+log group is collection of logs, logs are stored indefiently and never expire, log  in log group called loug stream
+cloud watch metrics are time oreded datepoints
+cloudwatch events, react to metics and logs, event source is how to trigger, event target is what to trigger
+cloudwatch custom metrics can be used, programatic send data, high resolution metrics can go from 1minute to 1 second, only way to get high res is custom metrics
+alarms trigger a notification based on metric (like an email or sns)
+cloudwatch dashboards allows to make dashboard with widgets, custom
+cloudwatch availibility - ec2 monitors at 5 minute interval, most other srvices are 1 minute, detailed monitoring for ec2 are 1 minute for extra
+cloud watch agent and host level metrics, cw doesn't track memory or disk space. cloudwatch agent is script can be installed via systems manager
+
+============= cloudtrail =============
+logs api calls between services, who to blame
+__ goverenece, compliance, operational auditing, risk auiditing, all refering to cloudtral
+monitor api calls and actions, where when who what
+ct event history is logs enabled by default for last 90 days.
+if more than 90 days, need to make a trail, and they oputput to s3 and don't have gui. to analyze, use amazon athena
+trail options - log all regions, accross all accounts in org, encrypt your logs, log file validation lets you know if tamper occurs
+cloudtrail can deliver to cloudwatch logs
+management events and data events, management events turned on by default, 90% of events, data events are s3 and lambda, off by default
+can be encrypted by kms
+
+============= lambda =============
+run code without provision ing servers, serverless funcitons, pay per invocation
+cheap, serverless, automatically scales
+lambda is glue, connects srvices together (processing post data and puting in dynamodb, processing s3 data)
+lambda triggers can be invoked via aws sdk or other aws services
+pricing first mil request are free, .2 per million requests, 400,000 gb second free
+default can only have 1000 lambdas, tmp dir can contain up to 500mb, by default no vpc but loses internet access
+timeout can be max 15 minutes
+meemory starts at 128mb, max of 3008mb increment of 64mb
+cold start is when code in run for first time, cold starts cause delay in user experiemnce, can pre warm
+good fit of short running stasks, longer ones should use fargate
+
+============= sqs =============
+simple queue service, managed queuing serice that allows decoupling and  scaling of microservices, distributed systems, and serverless apps
+quing system is async message system, not real time and not reactive, deleted once consumed
+streaming system reacts to events in real time
+sqs is application integration, bridge of communication, queue is temp reposity for messages waiting for processing. PULLING
+1 byte and 256 kb message size, sqs  client for java can go to 2gb (uses s3 bucket)
+message retention default is 4 days, min 60 seconds, max of 14 days
+standard queues nearly unlimted transactions per second, guarentes message delivered at least once, more than one copy of message could be delidvered out of order, best effortr ording
+fifo queue limted to 300 transacitons per second
+visibilty timeout is period of time message invisible, 0 to 12 hours, default is 30 seconds, delete message if finished, else it becomes visible again
+poling is message retireived from queueu,
+short polling returns message immediately even if queue is empty, when need something right away
+long polling waits till msg arrives or  timeout expeires, makes it inexepnsive, using long polling reduces costs because reduce empty recives, most cases shoudl use long polling
+
+============= SNS =============
+subscribe to send notifications via txt, webhooks, sqs, email, etc
+pub/sub is pubhlisher subscriber pattern. publisher publishes messages, sends to event buss, scruber subscribes to event bus, and recieves messages. pushed based
+decoupple microservicies (application intergrations)
+resouces publish (push), other services subscribe
+topics group subscriptions togheter, can deliver multiple ways
+subscriptions made to subscribe to topic, email good for internal (only supports plaintext), use ses for outgoing
+application endpoint allows to mobile devices
+
+============= elasticache =============
+cahcing service runing redis or memcache
+low durability, but fast access, temporary storage, high volitility
+in memory data stores, only accesible in same vpc to ensure low latency
+emcache is simple kv store, redis has more beells, but more slow than memcahce
+
+============= High Availibility =============
+think about what causes unavailible
+az goes down multiaz with elb, region goes down use route53, web app unresponsive laod balancer and asg, instance failure, asg, distance uses edges with cloudfront
+vertical sacaling or horizontal sacaling, vertical is simpler to manage but lower availibility, horitzontal scaling more complexity but higher avail, scale out before up
+
+============= elastic beanstalk =============
+deploy webapps without infra
+not recommended for production apps (enterprise), good for dev not thinking about infra, handles deployment
+can run dockerized environments
+
+============= api gateway =============
+managed service to craete, publish, maintain, monitor, and secure apis at scale
+creates secure apis, apis act as front door to acccess data, business logic, or backend services
+up to hudnereds of thousands of concurrent api calls, track or trhottle to prenvent attacks, scalable and cost effective, multiple verisons, restful api
+resouces are urls defined, can have children
+methods defined on resouces, get post put delete, stages are api verionss (prod, staging, qa), makes invoke url used to make calls
+deploy api aciton needs to be used when making changes
+integration type, most common integraiton is lambda, can manipulate request and response
+api cahcing can be enabled to reduce number of calls and improve latency
+cross origin resource sharing (cors) is header that allows access from different domains, cors enforced by client
+same origin policy is where borwser permits scripted contained in one domain to access data in another, prevents xss
+api gateways throttles endpoints at 10k requests per second, ask aws for more
+api gateway can be used for blue green deployment, canary deployment, or a/b testing
+canary development is releasing new api to small subset of users
+blue green deployment is releasing new api to all users, but only a few at a time
+in api blue green, both must be provisioned and maintained
+when in doubt on api gateway, throttle and cache
+
+============= kinessis =============
+real time data streaming service to ingest analyze from multiple sources
+collect, process, analyze data *real time*
+kinesis data stereams, producers send to data stream, stream has shards that distribute data, consumers read from stream, pay per shard, persists for 24hours or 168 hours, multiple consumers
+kinesis data fireouse, one conusmer and data disaperas when consumed, can transform/compress/secure, only pay for what is ingested, can be sent to s3, redshift, elasticsearch
+kinesis video stream, securely retain data (video and audio), used for ml
+data analytics, run custom sql queries on data in real time, can be expensive
+
+============= aws storage gateway =============
+extending, backing up on premise storage to the cloud 
+avail as vm image for on premise
+file gateway (network file system (nfs) for s3), nfs or smb, uses s3 metadata, treated as s3 object when transfered
+volume gateway (iscsi) stores copies of hardiscts in s3, interntet small computer system interface block protocal, data writen backed up aas point in time snapshots and stored into cloud as ebs snapshot
+stored volmue primary data stored locally, async backup to aws, data writen on premise, can be 1gb to 16tb size
+cache volume caches frequent files on premise, primary data is in s3, 1gb to 32gb cache volumes
+tape gateway (virtual tape library, vtl) backups virtual tapes to s3 glacier
+
+============= cloud9 =============
+an ide, can be used to write code, debug, and deploy
+
+============= notes =============
+look at fargate?
+
+============= Network Firewall =============
+deploy network protections for vpcs, scales, includes feature to protect from common network trheats
+FOR VPCS
+
+============= AWS WAF =============
+web app firewall that monitors http requests to cloudfront, api gateway, alb, or appsync
+web acl is collection of rules, default action that allows or blocked based on rule inspection
+each rule has a statment that says criteria andd action to take if amtches, can block, allow, count, or captcha against
+rule groups are managed sets of rules from aws managed or aws marketplace, can also self define
+rate based rule lmiits ratebased on origin ip
+
+============= s3 object lock =============
+enabled only when creating bucket
+can store objects using write once read many (worm) model
+default retention can be set
+after object locked enabled, can't disable or suspend versioning
+governence - users with specific iam perm can overwirite or delte object versions
+compliacne - no users can overwrite or delete during retention
+legal holds are placed on objects, independent from retention periods, as long object lock enabled can placed
+object lock can be enabled at bucket level, can be set to governence or compliance, can be set to retain until time
+
+============= WorkDocs =============
+google drive but for aws
+
+============= aws artifact ============
+resource for cpliance related info that matters to customer, 
+on demand access to aws security and cplience reports and online agrents
+
+============= amazon inspector =============
+security tool for detecting vulns in aws workloads, automated to test network
+
+============= EventBridge =============
+amazon cloudwatch events, serverless event buss to connect apps
+can have target
+
+============= database migration service dms =============
+move on premise data to aws with minimal downtime and zero loss
+
+============= Schema Conversion Tool =============
+converts database schema from one engine to another, a to b not a to a
+
+============= CloudHSM =============
+hardware security module to store keys in single tenant, then can use KMS for everything else
+allow independent audit
+
+============= FSx  =============
+managed file storage service, windows or lustre
+windows accessible over smb, integfrates with ad
+FSx For Lustre hpc, high perfomance computing, think ml or financial processing
+
+============= AWS Shield Advanced =============
+detection and mitigation of large ddos attacks, integration with waf
+ec2, elb, cloudfront, route53 can have
+FOR DDOS
+
+============= AWS Firewall Manager =============
+simplify waf admin and matainence acorss multiple accounts and resources
+
+============= Resource Access Manager (RAM) =============
+share aws resouces with any account or within org
+transit gateweways, subnets, licens manager, and route 53 reslover rules
+
+============= AWS Organizations =============
+consolidate multiple aws accounts and manage them
+
+============= AWS Transfer for SFTP =============
+move files via sftp
+
+============= Transit Gateway =============
+connects vpcs through centeral hub, cloud router
+
+============= Direct Connect =============
+connects premise to aws
+
+============= VPN CloudHub =============
+secure communication between remote sites
+
+============= Web Identity Federation =============
+external identity provider like google, facebook, amazon, etc
+
+============= AWS Directory Service AD Connector =============
+connects aws resource to on premise active directory
+
+============= Macie =============
+ml powered security service, used for s3
+uses ml to recognize sensitive info, discovers calssifys, and protects sensitive data
+policy finding reports policy violation / ussie with s3 security
+sensitive data finding is data in s3
+keyword cost effective
+
+============= Polly =============
+tts, turns text into speech
+
+============= Fraud Detector =============
+identifies potential frraud activities
+
+============= Kendra =============
+enterprise search service, search info in content
+
+============= lake formation =============
+data lake is centerailzed secure repository that stores data in original form and analysis prepared
+s3 is the storage layoer
+set up secure data lake in days
+lake formation creates buckets for data lake, imports data in them, stores data in one account
+integrated with aws glue ot create data catelog
+can use ad via federation
+
+============= Central Tower =============
+manage multiple aws s3 accounts
+
+============= Secret Manager =============
+store and manage secrets, rotate keys, use new kms key for isolation
+
+============= GuardDuty =============
+threat detection service
+
+============= Security Token Service =============
+provides temp security credentials for users or services as token without user+pass
+can give access to aws resources via roles
+
+
+aws global accelorator
+ec2 scaling
+ec2 placmeents
+fsx
+ec2 ena (efa)
+ecs
+data lifecycle manager
+aws event bridge
+aws waf
+aws lake formation
+aws control tower
+aws macie/kendra/polly
+S3 Object Lock (object retention, legal hold)
+AWS Firewall Manager
+Amazon GuardDuty 
+Amazon Macie
+AWS Network Firewall
+AWS Security Hub
+RDS event subscription
+canary release deployment strategy for the API Gateway. or blue green
+ec2 auto scaling termination
+message fannout pattern
+fwederation proxy
+aws mgn
+
+
+
+step scaling is based off metrics for ec2
+ec2 root volume cannot be encrypted, only data volumes, can encrypt snapshot
+lambda functions cannot be an origin for cloudfront, only their urls
+aws config is reouce config history and inventory
+aws secrets mamanger for rotating keys
+public subnets route to igw, priavte subnets route to nat
+poll sqs, subscribe to sns
+1 sqs or sns at a time for s3 event notification
+Object Lock means cannot disable object versioning
+cloudfront provides better latency, not necessarily better performance
+low latency high traffic queries with flexable schema use dynamodbr
+redis auth token parameter and trasnit encyrption enabled
+aws centeral tower is used to manage aws accounts
+sqs queues can subscribe to sns topics, 
+
+https://tutorialsdojo.com/aws-certified-solutions-architect-associate-saa-c03/
+https://digitalcloud.training/aws-cheat-sheets/
